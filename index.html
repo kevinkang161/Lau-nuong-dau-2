@@ -1243,11 +1243,13 @@ function bindNavEvents(){
 }
 
 // ---- Gửi dữ liệu đặt bàn về Google Sheets qua Apps Script ----
-async function submitReservationToSheet(data){
+// Dùng form ẩn + iframe vì Google Apps Script hay redirect 302,
+// fetch thường báo lỗi dù dữ liệu vẫn được ghi vào Sheet.
+function submitReservationToSheet(data){
   const url = (CONFIG.GOOGLE_SHEETS_URL || "").trim();
-  if(!url) throw new Error("Chưa cấu hình GOOGLE_SHEETS_URL trong CONFIG.");
+  if(!url) return Promise.reject(new Error("Chưa cấu hình GOOGLE_SHEETS_URL trong CONFIG."));
 
-  const payload = new URLSearchParams({
+  const fields = {
     name: data.name.trim(),
     phone: data.phone.trim().replace(/\s/g, ""),
     date: data.date,
@@ -1255,17 +1257,60 @@ async function submitReservationToSheet(data){
     guests: String(data.guests),
     notes: (data.notes || "").trim(),
     restaurant: CONFIG.TEN_QUAN,
-    submitted_at: new Date().toLocaleString("vi-VN")
-  });
+    submitted_at: new Date().toLocaleString("vi-VN"),
+    // Tên trường tiếng Việt — khớp nhiều mẫu Apps Script phổ biến
+    HoTen: data.name.trim(),
+    SDT: data.phone.trim().replace(/\s/g, ""),
+    Ngay: data.date,
+    Gio: data.time,
+    SoNguoi: String(data.guests),
+    GhiChu: (data.notes || "").trim()
+  };
 
-  const response = await fetch(url, {
-    method: "POST",
-    body: payload
-  });
+  return new Promise(function(resolve, reject){
+    let iframe = document.getElementById("gsheetSubmitFrame");
+    if(!iframe){
+      iframe = document.createElement("iframe");
+      iframe.id = "gsheetSubmitFrame";
+      iframe.name = "gsheetSubmitFrame";
+      iframe.style.display = "none";
+      iframe.setAttribute("aria-hidden", "true");
+      document.body.appendChild(iframe);
+    }
 
-  if(!response.ok){
-    throw new Error("Google Sheets trả về lỗi: " + response.status);
-  }
+    const tempForm = document.createElement("form");
+    tempForm.method = "POST";
+    tempForm.action = url;
+    tempForm.target = "gsheetSubmitFrame";
+    tempForm.style.display = "none";
+    tempForm.acceptCharset = "UTF-8";
+
+    Object.keys(fields).forEach(function(key){
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = key;
+      input.value = fields[key];
+      tempForm.appendChild(input);
+    });
+
+    document.body.appendChild(tempForm);
+
+    let settled = false;
+    function finish(ok){
+      if(settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if(tempForm.parentNode) tempForm.parentNode.removeChild(tempForm);
+      ok ? resolve() : reject(new Error("Không gửi được dữ liệu."));
+    }
+
+    iframe.onload = function(){ finish(true); };
+    iframe.onerror = function(){ finish(false); };
+
+    const timer = setTimeout(function(){ finish(true); }, 4000);
+
+    tempForm.submit();
+  });
 }
 
 // ---- Validate + submit form đặt bàn (gửi về Google Sheets) ----
