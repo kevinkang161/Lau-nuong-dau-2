@@ -26,7 +26,9 @@ const CONFIG = {
   PRICE_FROM: "100.000đ",
   PRICE_TO: "200.000đ",
   PRIMARY_COLOR: "#ff7a00",
-  SECONDARY_COLOR: "#111111"
+  SECONDARY_COLOR: "#111111",
+  // Link Web App Google Apps Script — dữ liệu đặt bàn sẽ gửi về Google Sheets
+  GOOGLE_SHEETS_URL: "https://script.google.com/macros/s/AKfycby7gokyc8bbzA3JYSrEIdaA2MogcPYiOXmjcIirC_qNZC_nBSDvakOLBkT1437TZEya/exec"
 };
 
 /* ==========================================================================
@@ -520,6 +522,12 @@ h1,h2,h3,h4{ font-family:var(--font-display); font-weight:600; letter-spacing:0.
   background:rgba(76,175,90,0.12); border:1px solid rgba(76,175,90,0.35); color:#9be3a6; font-size:13.5px;
 }
 .form-success.show{ display:block; }
+.form-error{
+  display:none; margin-top:18px; padding:16px 18px; border-radius:12px;
+  background:rgba(224,87,74,0.12); border:1px solid rgba(224,87,74,0.35); color:#ff8b7c; font-size:13.5px;
+}
+.form-error.show{ display:block; }
+.btn:disabled{ opacity:0.65; cursor:not-allowed; transform:none !important; }
 
 /* ==========================================================================
    FOOTER
@@ -815,8 +823,9 @@ h1,h2,h3,h4{ font-family:var(--font-display); font-weight:600; letter-spacing:0.
               <input type="text" id="resNotes" name="notes" placeholder="Ví dụ: bàn gần cửa sổ, sinh nhật...">
             </div>
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Gửi Yêu Cầu Đặt Bàn</button>
+          <button type="submit" class="btn btn-primary btn-block" id="reserveSubmitBtn">Gửi Yêu Cầu Đặt Bàn</button>
           <p class="form-note">Bằng việc gửi yêu cầu, bạn đồng ý để nhà hàng liên hệ xác nhận đặt bàn.</p>
+          <div class="form-error" id="formError" role="alert" aria-live="assertive"></div>
           <div class="form-success" id="formSuccess" role="status" aria-live="polite"></div>
         </form>
       </div>
@@ -1233,16 +1242,57 @@ function bindNavEvents(){
   }, { passive: true });
 }
 
-// ---- Validate + submit form đặt bàn (không reload trang) ----
+// ---- Gửi dữ liệu đặt bàn về Google Sheets qua Apps Script ----
+async function submitReservationToSheet(data){
+  const url = (CONFIG.GOOGLE_SHEETS_URL || "").trim();
+  if(!url) throw new Error("Chưa cấu hình GOOGLE_SHEETS_URL trong CONFIG.");
+
+  const payload = new URLSearchParams({
+    name: data.name.trim(),
+    phone: data.phone.trim().replace(/\s/g, ""),
+    date: data.date,
+    time: data.time,
+    guests: String(data.guests),
+    notes: (data.notes || "").trim(),
+    restaurant: CONFIG.TEN_QUAN,
+    submitted_at: new Date().toLocaleString("vi-VN")
+  });
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: payload
+  });
+
+  if(!response.ok){
+    throw new Error("Google Sheets trả về lỗi: " + response.status);
+  }
+}
+
+// ---- Validate + submit form đặt bàn (gửi về Google Sheets) ----
 function bindReservationForm(){
   const form = document.getElementById("reserveForm");
+  const submitBtn = document.getElementById("reserveSubmitBtn");
   const dateInput = document.getElementById("resDate");
+  const successEl = document.getElementById("formSuccess");
+  const errorEl = document.getElementById("formError");
   const today = new Date();
   dateInput.min = today.toISOString().split("T")[0];
 
   function setError(fieldId, errId, message){
     document.getElementById(fieldId).classList.toggle("has-error", Boolean(message));
     document.getElementById(errId).textContent = message || "";
+  }
+
+  function showFormMessage(type, message){
+    successEl.classList.remove("show");
+    errorEl.classList.remove("show");
+    if(type === "success"){
+      successEl.textContent = message;
+      successEl.classList.add("show");
+    } else {
+      errorEl.textContent = message;
+      errorEl.classList.add("show");
+    }
   }
 
   function validate(data){
@@ -1277,7 +1327,7 @@ function bindReservationForm(){
     return valid;
   }
 
-  form.addEventListener("submit", function(e){
+  form.addEventListener("submit", async function(e){
     e.preventDefault();
     const data = {
       name: form.name.value,
@@ -1289,13 +1339,28 @@ function bindReservationForm(){
     };
     if(!validate(data)) return;
 
-    const success = document.getElementById("formSuccess");
-    success.textContent = `Cảm ơn ${data.name}! Yêu cầu đặt bàn cho ${data.guests} khách lúc ${data.time} ngày ${data.date} đã được ghi nhận. Chúng tôi sẽ gọi xác nhận qua số ${data.phone} trong ít phút.`;
-    success.classList.add("show");
-    form.reset();
-    document.getElementById("resGuests").value = 2;
-    dateInput.min = today.toISOString().split("T")[0];
-    setTimeout(() => success.classList.remove("show"), 8000);
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Đang gửi...";
+    successEl.classList.remove("show");
+    errorEl.classList.remove("show");
+
+    try {
+      await submitReservationToSheet(data);
+      showFormMessage("success",
+        `Cảm ơn ${data.name}! Yêu cầu đặt bàn cho ${data.guests} khách lúc ${data.time} ngày ${data.date} đã được ghi nhận. Chúng tôi sẽ gọi xác nhận qua số ${data.phone} trong ít phút.`
+      );
+      form.reset();
+      document.getElementById("resGuests").value = 2;
+      dateInput.min = today.toISOString().split("T")[0];
+      setTimeout(() => successEl.classList.remove("show"), 8000);
+    } catch (err) {
+      showFormMessage("error",
+        `Không gửi được yêu cầu đặt bàn. Vui lòng thử lại hoặc gọi hotline ${CONFIG.SDT}.`
+      );
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Gửi Yêu Cầu Đặt Bàn";
+    }
   });
 }
 
