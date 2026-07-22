@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<script>
+/* ==========================================================================
+   CONFIG
+   Sửa toàn bộ thông tin quán tại MỘT nơi duy nhất. Mọi nội dung hiển thị
+   trên website đều được sinh ra từ object này — không hardcode nơi khác.
+   ========================================================================== */
+const CONFIG = {
+  TEN_QUAN: "Lẩu - Nướng Dậu 2",
+  SLOGAN: "Tinh hoa ẩm thực, trọn vị mỗi khoảnh khắc",
+  LOAI_HINH: "Lẩu cao cấp",
+  DIA_CHI: "86B, Đường Đoàn Văn Cự, Biên Hòa, Việt Nam, Biên Hòa, Vietnam",
+  SDT: "094 456 20 39",
+  EMAIL: "comnhabinhyen@gmail.com",
+  FACEBOOK: "https://www.facebook.com/launuongdau2/?locale=vi_VN",
+  INSTAGRAM: "",
+  TIKTOK: "",
+  ZALO: "",
+  GOOGLE_MAP: "https://maps.app.goo.gl/DCKSziP72nxHXXSv6",
+  GIO_MO_CUA: "16:30 - 22:00",
+  PRICE_FROM: "100.000đ",
+  PRICE_TO: "200.000đ",
+  PRIMARY_COLOR: "#ff7a00",
+  SECONDARY_COLOR: "#111111"
+};
+
+/* ==========================================================================
+   DATA
+   Toàn bộ nội dung của các khối "danh sách" trong website (menu, thư viện
+   ảnh, đánh giá, câu hỏi thường gặp, khuyến mãi...) được render bằng
+   JavaScript từ các mảng bên dưới. Muốn đổi nội dung cho khách hàng khác,
+   chỉ cần sửa dữ liệu trong mảng — KHÔNG cần sửa HTML hay CSS.
+   ========================================================================== */
+
+// Danh mục món ăn — dùng để sinh tab lọc menu tự động ("Tất cả" luôn đứng đầu)
+const CATEGORIES = ["Tất cả", "Món Nướng", "Lẩu", "Hải sản", "Món ăn", "Đồ uống"];
+
+// { name, price, description, image, category }
+const MENU = [
+  { name: "Bò Tảng Nướng Sốt Trứng Muối", price: "159.000đ", description: "Ướp sốt bí truyền, nướng trên than hoa cho lớp ngoài xém cạnh, bên trong mềm ngọt.", image: "img/bo-tang.webp", category: "Món Nướng" },
+  { name: "Nấm Sữa Nướng Chao", price: "109.000đ", description: "Nướng chín tới, dậy mùi thơm nức.", image: "img/nam-nuong.webp", category: "Món Nướng" },
+  { name: "Lẩu Thái", price: "250.000đ", description: "Nước lẩu chua cay đậm đà chuẩn vị Thái, đầy ắp tôm mực tươi sống.", image: "img/lau-thai.webp", category: "Lẩu" },
+  { name: "Ốc Hương Rang Muối", price: "139.000đ", description: "Giữ trọn vị ngọt tự nhiên của biển.", image: "", category: "Hải sản" },
+  { name: "Gỏi Mực Sốt Thái", price: "109.000đ", description: "Mực tươi nướng cùng sốt Thái cay nhẹ, dai giòn sần sật.", image: "img/Muc-sot-thai.webp", category: "Hải sản" },
+  { name: "Cua Rang Me", price: "189.000đ", description: "Cua thịt chắc, sốt me chua ngọt thấm đều từng thớ thịt.", image: "", category: "Hải sản" },
+  { name: "Cơm Chiên Hải Sản ", price: "89.000đ", description: "Cơm chiên nóng hổi cùng tôm, mực và rau củ tươi giòn.", image: "img/com-chien.webp", category: "Món ăn" },
+  { name: "Miến Xào Hải Sản", price: "99.000đ", description: "Rong biển tươi mát trộn dầu mè, thanh nhẹ khai vị.", image: "img/Mien-xao.webp", category: "Món ăn" },
+  { name: "Tiger Bạc", price: "24.000đ", description: "Vị chua ngọt hài hòa từ đào, cam và sả tươi, giải nhiệt tức thì.", image: "", category: "Đồ uống" },
+  { name: "1664 Blanc", price: "23.000đ", description: "Thức uống tươi mát, cân bằng vị ngọt và the mát của bạc hà.", image: "", category: "Đồ uống" },
+  { name: "Ép Táo", price: "29.000đ", description: "Thức uống tươi mát, cân bằng vị ngọt và the mát của Táo.", image: "", category: "Đồ uống" },
+  { name: "Pepsi, Sting, 7Up", price: "18.000đ", description: "Thức uống tươi mát, cân bằng vị ngọt và the mát.", image: "", category: "Đồ uống" }
+];
+
+// { icon, tag, title, description }
+const PROMOTIONS = [
+  { icon: "gift", tag: "Cuối tuần", title: "Giảm 10% cho nhóm từ 4 người", description: "Áp dụng thứ 6, 7 và Chủ nhật khi đặt bàn trước. Không áp dụng cùng ưu đãi khác." },
+  { icon: "star", tag: "Sinh nhật", title: "Tặng bánh kem sinh nhật", description: "Miễn phí bánh kem cho bàn từ 6 khách trở lên khi đặt trước ít nhất 1 ngày." },
+  { icon: "users", tag: "Nhóm đông", title: "Ưu tiên phòng riêng", description: "Đặt bàn từ 10 khách được ưu tiên khu vực riêng, thoáng mát và yên tĩnh." },
+  { icon: "clock", tag: "Giờ vàng", title: "Happy hour đồ uống", description: "Giảm 15% thức uống từ 16:30 đến 17:30 mỗi ngày trong tuần." }
+];
+
+// { image, caption }
+const GALLERY = [
+  { image: "img/khong-gian.webp", caption: "Không gian bếp than hoa mở" },
+  { image: "img/am-cung.webp", caption: "Bàn tiệc gia đình ấm cúng" },
+  { image: "img/ngoai-troi.webp", caption: "Khu vực ngoài trời thoáng mát" }
+  
+];
+
+// { name, role, rating (1-5), comment }
+const REVIEWS = [
+  { name: "Đoàn Thái", role: "Khách hàng thân thiết", rating: 5, comment: "Đã ăn ở đây nhiều lần rồi Đồ ăn ngon, phục vụ đáng yêu, nhiệt tình" },
+  { name: "Ngọc Mai", role: "Food blogger", rating: 5, comment: "Quán nướng view chill xỉu, đồ ăn ngon cuốn, nhân viên siêu nhiệt tình, phục vụ nhanh gọn. Rất đáng thử nha!" },
+  { name: "Lê Thanh Thảo", role: "Khách hàng thân thiết", rating: 4.6, comment: "Đồ ăn ngon vừa miệng, các bạn nhân viên phục vu thân thiện nhiệt tình, không gian quán thoáng mát mẻ" },
+  { name: "Đức Huy", role: "Khách hàng mới", rating: 5, comment: "Buffet không giới hạn cực kỳ đáng tiền, món đa dạng và luôn được bổ sung nóng hổi." },
+  { name: "Ngọc Trâm", role: "Khách quen cuối tuần", rating: 5, comment: "Chỗ hẹn cuối tuần yêu thích của gia đình mình, trẻ con cũng rất thích không gian ở đây." }
+];
+
+// { question, answer }
+const FAQ = [
+  { question: "Tôi có cần đặt bàn trước không?", answer: "Bạn nên đặt bàn trước ít nhất 1 giờ, đặc biệt vào cuối tuần và ngày lễ để đảm bảo có chỗ ngồi ưng ý." },
+  { question: "Có chỗ đậu xe không?", answer: "Nhà hàng có bãi giữ xe máy và ô tô miễn phí ngay tại khuôn viên." },
+  { question: "Có thực đơn chay không?", answer: "Có, chúng tôi có các món lẩu chay, salad và món khai vị chay đa dạng trong thực đơn." },
+  { question: "Giờ mở cửa của nhà hàng là mấy giờ?", answer: "Nhà hàng mở cửa phục vụ tất cả các ngày trong tuần theo khung giờ được hiển thị ở đầu trang." },
+  { question: "Tôi có thể thanh toán bằng hình thức nào?", answer: "Nhà hàng nhận thanh toán tiền mặt, thẻ ngân hàng và các ví điện tử phổ biến như Momo, ZaloPay, VNPay." }
+];
+
+// { icon, title, description }
+const HIGHLIGHTS = [
+  { icon: "leaf", title: "Nguyên Liệu Tươi Mỗi Ngày", description: "Nhập nguyên liệu mỗi sáng, kiểm soát chất lượng nghiêm ngặt trước khi chế biến." },
+  { icon: "flame", title: "Bếp Mở, Chế Biến Trực Tiếp", description: "Chứng kiến từng món ăn được chế biến ngay trước mắt, đảm bảo độ tươi ngon." },
+  { icon: "sparkles", title: "Không Gian Sang Trọng", description: "Thiết kế hiện đại, ấm cúng — phù hợp cho cả bữa ăn gia đình lẫn tiệc công ty." },
+  { icon: "heart", title: "Dịch Vụ Tận Tâm", description: "Đội ngũ nhân viên chuyên nghiệp, luôn sẵn sàng hỗ trợ để bạn có trải nghiệm trọn vẹn." }
+];
+
+// { title, description } — đây là một chuỗi tuần tự thật sự nên đánh số phù hợp
+const PROCESS = [
+  { title: "Đặt Bàn", description: "Đặt bàn trực tuyến hoặc gọi hotline, chọn khung giờ và số lượng khách phù hợp." },
+  { title: "Xác Nhận", description: "Đội ngũ nhà hàng liên hệ xác nhận thông tin trong vòng 15 phút." },
+  { title: "Trải Nghiệm", description: "Đến nhà hàng, thưởng thức món ăn tươi ngon trong không gian ấm cúng." },
+  { title: "Phản Hồi", description: "Chia sẻ đánh giá của bạn để chúng tôi phục vụ tốt hơn ở những lần sau." }
+];
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<title id="pageTitle">Nhà Hàng</title>
+<meta id="metaDescription" name="description" content="">
+<meta id="metaKeywords" name="keywords" content="nhà hàng, đặt bàn, ẩm thực">
+<link id="canonicalLink" rel="canonical" href="">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#111111">
+
+<!-- Open Graph -->
+<meta id="ogTitle" property="og:title" content="">
+<meta id="ogDescription" property="og:description" content="">
+<meta id="ogType" property="og:type" content="restaurant.restaurant">
+<meta id="ogUrl" property="og:url" content="">
+<meta id="ogImage" property="og:image" content="">
+<meta property="og:locale" content="vi_VN">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta id="twTitle" name="twitter:title" content="">
+<meta id="twDescription" name="twitter:description" content="">
+<meta id="twImage" name="twitter:image" content="">
+
+<script id="ldJson" type="application/ld+json"></script>
+
+<style>
+/* ==========================================================================
+   RESET &amp; BASE
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-base);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+ul, ol { list-style: none; }
+input, select, textarea { font-family: inherit; }
+::selection { background: var(--primary); color: #10090a; }
+
+/* ==========================================================================
+   TOKENS — giá trị mặc định, sẽ được ghi đè bằng JS đọc từ CONFIG
+   ========================================================================== */
+:root{
+  --primary:#ff7a00;
+  --primary-rgb:255,122,0;
+  --primary-light:#ffab5c;
+  --primary-dark:#c95e00;
+  --bg-base:#111111;
+  --bg-surface:#1a1a1a;
+  --bg-surface-2:#222222;
+  --text-main:#f3ede6;
+  --text-muted:#a79c8f;
+  --text-dim:#736a60;
+  --glass-bg:rgba(255,255,255,0.045);
+  --glass-bg-strong:rgba(255,255,255,0.07);
+  --glass-border:rgba(255,255,255,0.09);
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:26px;
+  --font-display:'Cormorant Garamond', serif;
+  --font-body:'Inter', sans-serif;
+  --shadow-primary:0 10px 34px rgba(var(--primary-rgb),0.35);
+}
+
+.container{ width:100%; max-width:1220px; margin:0 auto; padding:0 24px; }
+.section{ padding:110px 0; position:relative; scroll-margin-top:84px; }
+@media(max-width:768px){ .section{ padding:72px 0; } }
+
+.eyebrow{
+  font-family:var(--font-body); text-transform:uppercase; letter-spacing:0.24em;
+  font-size:12px; font-weight:600; color:var(--primary-light);
+  display:inline-flex; align-items:center; gap:10px; margin-bottom:16px;
+}
+.eyebrow::before{ content:""; width:24px; height:2px; background:var(--primary); display:inline-block; }
+
+h1,h2,h3,h4{ font-family:var(--font-display); font-weight:600; letter-spacing:0.01em; color:var(--text-main); }
+.section-title{ font-size:clamp(32px,4.4vw,52px); line-height:1.1; }
+.section-title em{ font-style:normal; color:var(--primary-light); }
+.section-sub{ color:var(--text-muted); font-size:16.5px; max-width:600px; margin-top:14px; font-weight:300; }
+.section-head{ margin-bottom:52px; }
+.section-head.center{ text-align:center; }
+.section-head.center .section-sub{ margin-left:auto; margin-right:auto; }
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  font-weight:600; font-size:14.5px; letter-spacing:0.02em;
+  padding:15px 32px; border-radius:12px; white-space:nowrap;
+  transition:transform .22s ease, box-shadow .22s ease, background .22s ease, border-color .22s ease;
+}
+.btn-primary{ background:linear-gradient(135deg, var(--primary-light), var(--primary)); color:#181008; box-shadow:var(--shadow-primary); }
+.btn-primary:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(var(--primary-rgb),0.48); }
+.btn-ghost{ background:var(--glass-bg); border:1px solid var(--glass-border); color:var(--text-main); backdrop-filter:blur(10px); }
+.btn-ghost:hover{ border-color:var(--primary); color:var(--primary-light); }
+.btn-block{ width:100%; }
+.btn:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline:2px solid var(--primary-light); outline-offset:3px;
+}
+
+.glass-card{
+  background:var(--glass-bg); border:1px solid var(--glass-border);
+  border-radius:var(--radius-md); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+}
+
+.skip-link{
+  position:absolute; left:-999px; top:auto; background:var(--primary); color:#161009;
+  padding:12px 20px; border-radius:8px; z-index:999; font-weight:600;
+}
+.skip-link:focus{ left:16px; top:16px; }
+
+/* Scroll reveal */
+[data-animate]{ opacity:0; transform:translateY(28px); transition:opacity .8s ease, transform .8s ease; }
+[data-animate].is-visible{ opacity:1; transform:none; }
+[data-animate="fade"]{ transform:none; }
+[data-animate].is-visible ~ [data-animate]{ transition-delay:.05s; }
+@media(prefers-reduced-motion: reduce){
+  [data-animate]{ opacity:1 !important; transform:none !important; transition:none !important; }
+  html{ scroll-behavior:auto; }
+  * { animation-duration:0.01ms !important; animation-iteration-count:1 !important; }
+}
+
+/* ==========================================================================
+   NAVBAR
+   ========================================================================== */
+.navbar{
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  padding:20px 0; transition:padding .3s ease, background .3s ease, border-color .3s ease;
+  border-bottom:1px solid transparent;
+}
+.navbar.scrolled{
+  padding:13px 0; background:rgba(17,17,17,0.78); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-bottom-color:var(--glass-border);
+}
+.nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.nav-logo{ font-family:var(--font-display); font-weight:700; font-size:23px; color:var(--text-main); display:flex; align-items:center; gap:10px; }
+.nav-logo .dot{ width:9px; height:9px; border-radius:50%; background:var(--primary); box-shadow:0 0 12px var(--primary); flex-shrink:0; }
+.nav-links{ display:none; align-items:center; gap:30px; }
+.nav-links a{ font-size:14px; font-weight:500; color:var(--text-muted); transition:color .2s ease; }
+.nav-links a:hover{ color:var(--primary-light); }
+.nav-right{ display:flex; align-items:center; gap:18px; }
+.nav-cta{ display:none; }
+.nav-burger{ display:flex; flex-direction:column; gap:5px; padding:8px; }
+.nav-burger span{ width:24px; height:2px; background:var(--text-main); border-radius:2px; transition:transform .25s ease, opacity .25s ease; }
+@media(min-width:960px){
+  .nav-links{ display:flex; }
+  .nav-cta{ display:inline-flex; }
+  .nav-burger{ display:none; }
+}
+.mobile-nav{
+  display:none; flex-direction:column; gap:4px; padding:18px 24px 26px;
+  background:rgba(17,17,17,0.96); border-bottom:1px solid var(--glass-border);
+}
+.mobile-nav.open{ display:flex; }
+.mobile-nav a{ padding:11px 0; font-size:15.5px; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,0.05); }
+.mobile-nav .btn{ margin-top:14px; }
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+.hero{
+  position:relative; min-height:100svh; display:flex; align-items:center;
+  overflow:hidden; padding-top:90px;
+  background:
+    radial-gradient(ellipse 55% 50% at 80% 25%, rgba(var(--primary-rgb),0.22), transparent 60%),
+    radial-gradient(ellipse 45% 55% at 10% 85%, rgba(var(--primary-rgb),0.12), transparent 60%),
+    var(--bg-base);
+}
+.hero-orb{ position:absolute; border-radius:50%; filter:blur(70px); opacity:.55; pointer-events:none; }
+.hero-orb.o1{ width:420px; height:420px; background:radial-gradient(circle, rgba(var(--primary-rgb),0.55), transparent 70%); top:-120px; right:-80px; animation:float1 16s ease-in-out infinite; }
+.hero-orb.o2{ width:280px; height:280px; background:radial-gradient(circle, rgba(var(--primary-rgb),0.35), transparent 70%); bottom:-60px; left:-60px; animation:float2 20s ease-in-out infinite; }
+@keyframes float1{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(-30px,40px); } }
+@keyframes float2{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(30px,-30px); } }
+.hero-grid{
+  position:absolute; inset:0;
+  background-image:linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 65% 55% at 65% 40%, black, transparent 75%);
+}
+.hero-inner{ position:relative; z-index:2; padding:70px 0 90px; text-align:left; max-width:760px; }
+.hero-badge{
+  display:inline-flex; align-items:center; gap:10px; padding:9px 18px; border-radius:30px;
+  margin-bottom:26px; font-size:13px; font-weight:500; color:var(--primary-light);
+}
+.hero h1{ font-size:clamp(44px,7.4vw,86px); line-height:1.02; }
+.hero-slogan{ margin-top:22px; font-size:19px; color:var(--text-muted); font-weight:300; max-width:520px; }
+.hero-cta-row{ display:flex; flex-wrap:wrap; gap:16px; margin-top:40px; }
+.hero-meta{ display:flex; gap:36px; margin-top:60px; flex-wrap:wrap; }
+.hero-meta-item{ border-left:2px solid var(--primary); padding-left:16px; }
+.hero-meta-item strong{ display:block; font-family:var(--font-display); font-size:24px; color:var(--text-main); font-weight:600; }
+.hero-meta-item span{ font-size:11.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.08em; }
+.scroll-cue{ position:absolute; bottom:26px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--text-dim); font-size:10.5px; letter-spacing:0.18em; text-transform:uppercase; z-index:2; }
+.scroll-cue .stick{ width:1px; height:32px; background:linear-gradient(var(--primary), transparent); animation:pulse 1.8s ease-in-out infinite; }
+@keyframes pulse{ 0%,100%{ opacity:.25; } 50%{ opacity:1; } }
+
+/* ==========================================================================
+   ABOUT
+   ========================================================================== */
+.about-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:60px; align-items:center; }
+@media(max-width:860px){ .about-grid{ grid-template-columns:1fr; gap:36px; } }
+.about-visual{ position:relative; aspect-ratio:1/1; }
+.about-frame{
+  position:absolute; inset:0; border-radius:var(--radius-lg); overflow:hidden;
+  background:linear-gradient(155deg, var(--bg-surface-2), var(--bg-surface));
+  border:1px solid var(--glass-border);
+  display:flex; align-items:center; justify-content:center;
+}
+.about-frame svg{ width:34%; height:34%; stroke:var(--primary-light); fill:none; stroke-width:1.2; opacity:.85; }
+.about-frame::after{ content:""; position:absolute; inset:0; background:radial-gradient(circle at 25% 20%, rgba(255,255,255,0.06), transparent 60%); }
+.about-ring{ position:absolute; inset:14%; border-radius:50%; border:1.5px dashed rgba(var(--primary-rgb),0.35); animation:spin 50s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.about-copy p{ color:var(--text-muted); font-size:16.5px; margin-top:16px; font-weight:300; max-width:540px; }
+.about-stats{ display:flex; gap:40px; margin-top:34px; flex-wrap:wrap; }
+.about-stats div strong{ font-family:var(--font-display); font-size:30px; color:var(--primary-light); display:block; }
+.about-stats div span{ font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; }
+
+/* ==========================================================================
+   HIGHLIGHTS
+   ========================================================================== */
+.highlights-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+@media(max-width:960px){ .highlights-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:560px){ .highlights-grid{ grid-template-columns:1fr; } }
+.highlight-card{ padding:32px 26px; transition:transform .3s ease, border-color .3s ease; }
+.highlight-card:hover{ transform:translateY(-6px); border-color:rgba(var(--primary-rgb),0.4); }
+.highlight-icon{ width:52px; height:52px; border-radius:14px; background:rgba(var(--primary-rgb),0.14); display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+.highlight-icon svg{ width:24px; height:24px; stroke:var(--primary-light); fill:none; stroke-width:1.8; }
+.highlight-card h3{ font-family:var(--font-body); font-size:17px; font-weight:600; text-transform:none; }
+.highlight-card p{ font-size:13.5px; color:var(--text-muted); margin-top:8px; font-weight:300; }
+
+/* ==========================================================================
+   MENU (featured + full with category filter)
+   ========================================================================== */
+.menu-section{ background:var(--bg-surface); }
+.featured-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-bottom:90px; }
+@media(max-width:900px){ .featured-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:560px){ .featured-grid{ grid-template-columns:1fr; } }
+
+.thumb{ position:relative; aspect-ratio:4/3; overflow:hidden; background:var(--bg-surface-2); }
+.thumb-fallback{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:2.4rem; font-weight:600; color:rgba(var(--primary-rgb),0.4);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(var(--primary-rgb),0.18), transparent 55%),
+    linear-gradient(155deg, var(--bg-surface-2), var(--bg-surface));
+}
+.thumb img{ position:relative; z-index:1; width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
+.food-card:hover .thumb img{ transform:scale(1.06); }
+
+.food-card{
+  border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--glass-border); background:var(--bg-base);
+  transition:transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+}
+.food-card:hover{ transform:translateY(-6px); border-color:rgba(var(--primary-rgb),0.45); box-shadow:0 22px 44px rgba(0,0,0,0.4); }
+.food-badge{
+  position:absolute; top:12px; left:12px; z-index:2; background:rgba(0,0,0,0.55); color:var(--primary-light);
+  font-size:10.5px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; padding:5px 11px; border-radius:20px;
+}
+.food-body{ padding:20px; }
+.food-body h4{ font-family:var(--font-body); font-weight:600; font-size:16px; color:var(--text-main); }
+.food-body p{ font-size:13px; color:var(--text-dim); margin-top:6px; min-height:34px; font-weight:300; }
+.food-foot{ display:flex; justify-content:space-between; align-items:center; margin-top:16px; }
+.food-price{ font-family:var(--font-display); color:var(--primary-light); font-size:18px; font-weight:600; }
+
+.category-tabs{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:44px; }
+.tab-btn{
+  background:var(--bg-base); border:1px solid var(--glass-border); color:var(--text-muted);
+  font-size:13.5px; font-weight:500; padding:11px 22px; border-radius:30px; transition:all .25s ease;
+}
+.tab-btn:hover{ color:var(--text-main); border-color:var(--primary); }
+.tab-btn.active{ background:linear-gradient(135deg, var(--primary-light), var(--primary)); color:#181008; border-color:transparent; box-shadow:var(--shadow-primary); }
+.menu-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+@media(max-width:900px){ .menu-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:560px){ .menu-grid{ grid-template-columns:1fr; } }
+.menu-empty{ text-align:center; color:var(--text-dim); padding:40px 0; grid-column:1/-1; }
+
+/* ==========================================================================
+   GALLERY
+   ========================================================================== */
+.gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+@media(max-width:860px){ .gallery-grid{ grid-template-columns:repeat(2,1fr); } }
+.gallery-item{ position:relative; aspect-ratio:1/1; border-radius:var(--radius-sm); overflow:hidden; cursor:pointer; }
+.gallery-item .thumb{ width:100%; height:100%; aspect-ratio:auto; }
+.gallery-caption{
+  position:absolute; inset:auto 0 0 0; padding:14px 16px; font-size:12.5px; color:var(--text-main);
+  background:linear-gradient(to top, rgba(0,0,0,0.75), transparent); opacity:0; transition:opacity .3s ease; z-index:2;
+}
+.gallery-item:hover .gallery-caption{ opacity:1; }
+.gallery-item:hover .thumb img{ transform:scale(1.08); }
+
+.lightbox{
+  position:fixed; inset:0; z-index:400; background:rgba(10,8,6,0.92); backdrop-filter:blur(6px);
+  display:none; align-items:center; justify-content:center; padding:32px;
+}
+.lightbox.open{ display:flex; }
+.lightbox-inner{ max-width:800px; width:100%; text-align:center; }
+.lightbox-inner .thumb{ aspect-ratio:4/3; border-radius:var(--radius-md); }
+.lightbox-caption{ margin-top:16px; color:var(--text-muted); font-size:14px; }
+.lightbox-close{
+  position:absolute; top:24px; right:24px; width:44px; height:44px; border-radius:50%;
+  background:var(--glass-bg-strong); border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center;
+}
+.lightbox-close svg{ width:18px; height:18px; stroke:var(--text-main); fill:none; stroke-width:2; }
+
+/* ==========================================================================
+   PROMOTIONS
+   ========================================================================== */
+.promo-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+@media(max-width:960px){ .promo-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:560px){ .promo-grid{ grid-template-columns:1fr; } }
+.promo-card{ padding:28px 24px; position:relative; transition:transform .3s ease, border-color .3s ease; }
+.promo-card:hover{ transform:translateY(-6px); border-color:rgba(var(--primary-rgb),0.45); }
+.promo-tag{
+  display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--primary-light); background:rgba(var(--primary-rgb),0.14); padding:5px 12px; border-radius:20px; margin-bottom:16px;
+}
+.promo-card svg{ width:30px; height:30px; stroke:var(--primary-light); fill:none; stroke-width:1.5; margin-bottom:14px; }
+.promo-card h3{ font-family:var(--font-body); font-size:16.5px; font-weight:600; text-transform:none; }
+.promo-card p{ font-size:13px; color:var(--text-muted); margin-top:10px; font-weight:300; line-height:1.6; }
+
+/* ==========================================================================
+   REVIEWS
+   ========================================================================== */
+.reviews-track{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+@media(max-width:960px){ .reviews-track{ grid-template-columns:1fr 1fr; } }
+@media(max-width:640px){
+  .reviews-track{ grid-template-columns:repeat(5, minmax(260px,1fr)); display:flex; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:12px; gap:16px; }
+  .review-card{ scroll-snap-align:start; flex:0 0 82%; }
+}
+.review-card{ padding:28px 26px; }
+.review-stars{ color:var(--primary-light); font-size:15px; letter-spacing:2px; margin-bottom:14px; }
+.review-comment{ font-size:14.5px; color:var(--text-muted); font-weight:300; line-height:1.7; }
+.review-who{ display:flex; align-items:center; gap:12px; margin-top:22px; }
+.review-avatar{
+  width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:rgba(var(--primary-rgb),0.16); color:var(--primary-light); font-family:var(--font-display); font-weight:700; font-size:17px;
+}
+.review-who strong{ display:block; font-size:14px; font-weight:600; color:var(--text-main); }
+.review-who span{ font-size:12px; color:var(--text-dim); }
+
+/* ==========================================================================
+   PROCESS
+   ========================================================================== */
+.process-section{ background:var(--bg-surface); }
+.process-steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px; position:relative; }
+@media(max-width:900px){ .process-steps{ grid-template-columns:1fr 1fr; } }
+@media(max-width:560px){ .process-steps{ grid-template-columns:1fr; } }
+.process-step{ position:relative; padding:32px 24px 26px; }
+.process-num{ font-family:var(--font-display); font-size:44px; font-weight:700; color:rgba(var(--primary-rgb),0.35); line-height:1; margin-bottom:14px; }
+.process-step h3{ font-family:var(--font-body); font-size:16px; font-weight:600; text-transform:none; }
+.process-step p{ font-size:13px; color:var(--text-muted); margin-top:8px; font-weight:300; }
+
+/* ==========================================================================
+   FAQ
+   ========================================================================== */
+.faq-list{ max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
+.faq-item{ padding:6px 26px; }
+.faq-item summary{
+  cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center;
+  padding:16px 0; font-family:var(--font-body); font-weight:600; font-size:15.5px; color:var(--text-main);
+}
+.faq-item summary::-webkit-details-marker{ display:none; }
+.faq-icon{ width:20px; height:20px; stroke:var(--primary-light); fill:none; stroke-width:2; flex-shrink:0; transition:transform .3s ease; }
+.faq-item[open] .faq-icon{ transform:rotate(45deg); }
+.faq-answer{ padding:0 0 20px; font-size:14px; color:var(--text-muted); font-weight:300; line-height:1.7; }
+
+/* ==========================================================================
+   MAP
+   ========================================================================== */
+.map-wrap{ border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--glass-border); aspect-ratio:21/8; }
+@media(max-width:768px){ .map-wrap{ aspect-ratio:4/5; } }
+.map-wrap iframe{ width:100%; height:100%; border:0; filter:grayscale(0.3) contrast(1.05); }
+
+/* ==========================================================================
+   RESERVATION FORM
+   ========================================================================== */
+.reserve-section{ background:radial-gradient(ellipse 60% 60% at 85% 15%, rgba(var(--primary-rgb),0.14), transparent 60%) , var(--bg-base); }
+.reserve-wrap{ display:grid; grid-template-columns:0.85fr 1.15fr; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--glass-border); }
+@media(max-width:900px){ .reserve-wrap{ grid-template-columns:1fr; } }
+.reserve-info{ padding:56px 46px; background:linear-gradient(160deg, var(--bg-surface-2), var(--bg-base)); display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+.reserve-info::before{ content:""; position:absolute; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle, rgba(var(--primary-rgb),0.28), transparent 70%); top:-80px; right:-80px; filter:blur(10px); }
+.reserve-info h3{ font-size:30px; position:relative; z-index:1; }
+.reserve-info p{ color:var(--text-muted); font-size:14.5px; margin-top:14px; font-weight:300; position:relative; z-index:1; }
+.reserve-points{ margin-top:28px; display:flex; flex-direction:column; gap:15px; position:relative; z-index:1; }
+.reserve-points li{ display:flex; gap:12px; align-items:center; font-size:13.5px; color:var(--text-muted); }
+.reserve-points svg{ width:18px; height:18px; stroke:var(--primary-light); fill:none; stroke-width:2; flex-shrink:0; }
+.reserve-form{ padding:56px 46px; background:var(--bg-surface); }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media(max-width:520px){ .form-row{ grid-template-columns:1fr; } }
+.field{ display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
+.field label{ font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; }
+.field input, .field select, .field textarea{
+  background:var(--bg-surface-2); border:1px solid var(--glass-border); color:var(--text-main);
+  padding:13px 16px; border-radius:10px; font-size:14.5px; outline:none; transition:border-color .2s ease, background .2s ease; width:100%;
+}
+.field input::placeholder, .field textarea::placeholder{ color:var(--text-dim); }
+.field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--primary); background:var(--bg-base); }
+.field textarea{ resize:vertical; min-height:88px; }
+.field.has-error input, .field.has-error select, .field.has-error textarea{ border-color:#e0574a; }
+.field-error{ font-size:12px; color:#ff8b7c; min-height:15px; }
+.reserve-form .btn{ margin-top:6px; }
+.form-note{ font-size:11.5px; color:var(--text-dim); text-align:center; margin-top:14px; }
+.form-success{
+  display:none; margin-top:18px; padding:16px 18px; border-radius:12px;
+  background:rgba(76,175,90,0.12); border:1px solid rgba(76,175,90,0.35); color:#9be3a6; font-size:13.5px;
+}
+.form-success.show{ display:block; }
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.footer{ background:var(--bg-surface); border-top:1px solid var(--glass-border); }
+.footer-grid{ display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr; gap:44px; padding-top:80px; }
+@media(max-width:860px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:520px){ .footer-grid{ grid-template-columns:1fr; } }
+.footer-brand .nav-logo{ margin-bottom:16px; }
+.footer-brand p{ color:var(--text-muted); font-size:13.5px; max-width:280px; font-weight:300; }
+.footer-social{ display:flex; gap:10px; margin-top:20px; }
+.footer-social a{ width:38px; height:38px; border-radius:50%; border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center; transition:border-color .2s ease, background .2s ease; }
+.footer-social a:hover{ border-color:var(--primary); background:rgba(var(--primary-rgb),0.12); }
+.footer-social svg{ width:16px; height:16px; stroke:var(--primary-light); fill:none; stroke-width:2; }
+.footer-col h5{ font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--primary-light); margin-bottom:20px; font-family:var(--font-body); font-weight:700; }
+.footer-col ul{ display:flex; flex-direction:column; gap:13px; }
+.footer-col a, .footer-col li{ font-size:13.5px; color:var(--text-muted); }
+.footer-col a:hover{ color:var(--primary-light); }
+.footer-bottom{ margin-top:64px; padding:24px 0; border-top:1px solid var(--glass-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.footer-bottom p{ font-size:12px; color:var(--text-dim); }
+
+/* ==========================================================================
+   QUICKBAR (floating contact buttons)
+   ========================================================================== */
+.quickbar{ position:fixed; right:20px; bottom:20px; z-index:300; display:flex; flex-direction:column; gap:12px; }
+.quick-btn{
+  width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:var(--glass-bg-strong); border:1px solid var(--glass-border); backdrop-filter:blur(12px);
+  box-shadow:0 10px 26px rgba(0,0,0,0.35); transition:transform .2s ease, background .2s ease;
+}
+.quick-btn:hover{ transform:translateY(-3px) scale(1.05); background:rgba(var(--primary-rgb),0.22); }
+.quick-btn svg{ width:22px; height:22px; stroke:var(--primary-light); fill:none; stroke-width:2; }
+.quick-btn.call{ background:linear-gradient(135deg, var(--primary-light), var(--primary)); animation:fabpulse 2.6s ease-in-out infinite; }
+.quick-btn.call svg{ stroke:#181008; }
+@keyframes fabpulse{ 0%,100%{ box-shadow:0 10px 26px rgba(var(--primary-rgb),0.4); } 50%{ box-shadow:0 10px 36px rgba(var(--primary-rgb),0.75); } }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua đến nội dung chính</a>
+
+<!-- ==========================================================================
+     QUICKBAR — nút liên hệ nhanh nổi
+     ========================================================================== -->
+<div class="quickbar" id="quickbar" aria-label="Liên hệ nhanh"></div>
+
+<!-- ==========================================================================
+     NAVBAR
+     ========================================================================== -->
+<header class="navbar" id="navbar">
+  <div class="container nav-inner">
+    <a href="#main" class="nav-logo"><span class="dot"></span><span id="navLogoText">Nhà Hàng</span></a>
+    <div class="nav-right">
+      <nav class="nav-links" aria-label="Điều hướng chính">
+        <a href="#about">Giới thiệu</a>
+        <a href="#menu">Thực đơn</a>
+        <a href="#gallery">Không gian</a>
+        <a href="#promotions">Ưu đãi</a>
+        <a href="#reviews">Đánh giá</a>
+        <a href="#faq">FAQ</a>
+        <a href="#reserve">Đặt bàn</a>
+      </nav>
+      <a href="#reserve" class="btn btn-primary nav-cta">Đặt Bàn Ngay</a>
+      <button class="nav-burger" id="navBurger" aria-label="Mở menu điều hướng" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Điều hướng di động">
+    <a href="#about">Giới thiệu</a>
+    <a href="#menu">Thực đơn</a>
+    <a href="#gallery">Không gian</a>
+    <a href="#promotions">Ưu đãi</a>
+    <a href="#reviews">Đánh giá</a>
+    <a href="#faq">FAQ</a>
+    <a href="#reserve" class="btn btn-primary">Đặt Bàn Ngay</a>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ==========================================================================
+       HERO
+       ========================================================================== -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="hero-orb o1"></div>
+    <div class="hero-orb o2"></div>
+    <div class="hero-grid"></div>
+    <div class="container hero-inner">
+      <span class="hero-badge glass-card" id="heroBadge">Nhà hàng</span>
+      <h1 id="heroTitle">Nhà Hàng</h1>
+      <p class="hero-slogan" id="heroSlogan">Slogan</p>
+      <div class="hero-cta-row">
+        <a href="#reserve" class="btn btn-primary">Đặt Bàn Ngay</a>
+        <a href="#menu" class="btn btn-ghost">Xem Thực Đơn</a>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item"><strong id="heroHours">--</strong><span>Giờ mở cửa</span></div>
+        <div class="hero-meta-item"><strong id="heroPrice">--</strong><span>Khoảng giá</span></div>
+        <div class="hero-meta-item"><strong id="heroAddressShort">--</strong><span>Địa chỉ</span></div>
+      </div>
+    </div>
+    <div class="scroll-cue"><span>Cuộn xuống</span><div class="stick"></div></div>
+  </section>
+
+  <!-- ==========================================================================
+       GIỚI THIỆU (About)
+       ========================================================================== -->
+  <section class="section about" id="about" aria-labelledby="aboutTitle">
+    <div class="container about-grid">
+      <div class="about-visual" data-animate>
+        <div class="about-ring"></div>
+        <div class="about-frame">
+          <svg viewBox="0 0 24 24"><path d="M12 2c1.2 3 4 4.7 4 8.2A4 4 0 0 1 12 14a4 4 0 0 1-4-4C8 6.7 10.8 5 12 2Z"/><path d="M8.5 14a4 4 0 0 0 7 2.6c1.5-1.8 1.2-4 .5-5.6 1.8 1.3 3 3.4 3 5.8a7 7 0 0 1-14 0c0-1.7.6-3 1.5-4"/></svg>
+        </div>
+      </div>
+      <div class="about-copy" data-animate>
+        <span class="eyebrow">Câu chuyện của chúng tôi</span>
+        <h2 class="section-title" id="aboutTitle">Nơi hương vị <em>hội tụ</em></h2>
+        <p id="aboutText">Đang tải giới thiệu...</p>
+        <div class="about-stats">
+          <div><strong>4.9<span style="font-size:16px;">/5</span></strong><span>Đánh giá khách hàng</span></div>
+          <div><strong id="aboutMenuCount">0+</strong><span>Món ăn đa dạng</span></div>
+          <div><strong>10K+</strong><span>Khách hàng phục vụ</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       ĐIỂM NỔI BẬT (Highlights)
+       ========================================================================== -->
+  <section class="section" aria-labelledby="highlightsTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Vì sao chọn chúng tôi</span>
+        <h2 class="section-title" id="highlightsTitle">Điểm <em>Nổi Bật</em></h2>
+      </div>
+      <div class="highlights-grid" id="highlightsGrid" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       MENU — nổi bật + danh mục có lọc tab
+       ========================================================================== -->
+  <section class="section menu-section" id="menu" aria-labelledby="menuTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Thực đơn</span>
+        <h2 class="section-title" id="menuTitle">Món Ăn <em>Nổi Bật</em></h2>
+        <p class="section-sub" style="margin-left:auto;margin-right:auto;">Những món được yêu thích nhất, chế biến mỗi ngày từ nguyên liệu tươi ngon.</p>
+      </div>
+      <div class="featured-grid" id="featuredMenuGrid" data-animate></div>
+
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Danh mục</span>
+        <h2 class="section-title">Khám Phá <em>Toàn Bộ Menu</em></h2>
+      </div>
+      <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="Lọc danh mục món ăn"></div>
+      <div class="menu-grid" id="menuGrid"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       GALLERY (Không gian)
+       ========================================================================== -->
+  <section class="section" id="gallery" aria-labelledby="galleryTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Không gian</span>
+        <h2 class="section-title" id="galleryTitle">Khoảnh Khắc <em>Tại Nhà Hàng</em></h2>
+      </div>
+      <div class="gallery-grid" id="galleryGrid" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       KHUYẾN MÃI (Promotions)
+       ========================================================================== -->
+  <section class="section" id="promotions" aria-labelledby="promoTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Ưu đãi</span>
+        <h2 class="section-title" id="promoTitle">Khuyến Mãi <em>Đặc Biệt</em></h2>
+      </div>
+      <div class="promo-grid" id="promoGrid" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       REVIEW KHÁCH HÀNG
+       ========================================================================== -->
+  <section class="section" id="reviews" aria-labelledby="reviewsTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Cảm nhận</span>
+        <h2 class="section-title" id="reviewsTitle">Khách Hàng <em>Nói Gì</em></h2>
+      </div>
+      <div class="reviews-track" id="reviewsGrid" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       QUY TRÌNH PHỤC VỤ (Process)
+       ========================================================================== -->
+  <section class="section process-section" aria-labelledby="processTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Quy trình</span>
+        <h2 class="section-title" id="processTitle">Trải Nghiệm <em>Đơn Giản</em></h2>
+      </div>
+      <div class="process-steps" id="processSteps" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FAQ
+       ========================================================================== -->
+  <section class="section" id="faq" aria-labelledby="faqTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Giải đáp</span>
+        <h2 class="section-title" id="faqTitle">Câu Hỏi <em>Thường Gặp</em></h2>
+      </div>
+      <div class="faq-list" id="faqList" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       GOOGLE MAPS
+       ========================================================================== -->
+  <section class="section" aria-labelledby="mapTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Vị trí</span>
+        <h2 class="section-title" id="mapTitle">Tìm <em>Đường Đến Đây</em></h2>
+      </div>
+      <div class="map-wrap glass-card" id="mapWrap" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FORM ĐẶT BÀN
+       ========================================================================== -->
+  <section class="section reserve-section" id="reserve" aria-labelledby="reserveTitle">
+    <div class="container">
+      <div class="section-head center" data-animate>
+        <span class="eyebrow">Đặt bàn trực tuyến</span>
+        <h2 class="section-title" id="reserveTitle">Giữ Chỗ <em>Chỉ Trong 30 Giây</em></h2>
+      </div>
+      <div class="reserve-wrap" data-animate>
+        <div class="reserve-info">
+          <h3>Bàn của bạn đang chờ</h3>
+          <p>Điền thông tin bên cạnh, đội ngũ chúng tôi sẽ gọi xác nhận sớm nhất để giữ chỗ đẹp nhất cho nhóm bạn.</p>
+          <ul class="reserve-points">
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Xác nhận nhanh qua điện thoại</li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Miễn phí đổi giờ trước 1 tiếng</li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Ưu tiên bàn cho nhóm đông</li>
+          </ul>
+        </div>
+        <form class="reserve-form" id="reserveForm" novalidate>
+          <div class="form-row">
+            <div class="field" id="fieldName">
+              <label for="resName">Họ và tên</label>
+              <input type="text" id="resName" name="name" placeholder="Nguyễn Văn A" required aria-required="true">
+              <span class="field-error" id="errName"></span>
+            </div>
+            <div class="field" id="fieldPhone">
+              <label for="resPhone">Số điện thoại</label>
+              <input type="tel" id="resPhone" name="phone" inputmode="numeric" placeholder="09xxxxxxxx" required aria-required="true">
+              <span class="field-error" id="errPhone"></span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field" id="fieldDate">
+              <label for="resDate">Ngày</label>
+              <input type="date" id="resDate" name="date" required aria-required="true">
+              <span class="field-error" id="errDate"></span>
+            </div>
+            <div class="field" id="fieldTime">
+              <label for="resTime">Giờ</label>
+              <input type="time" id="resTime" name="time" required aria-required="true">
+              <span class="field-error" id="errTime"></span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field" id="fieldGuests">
+              <label for="resGuests">Số người</label>
+              <input type="number" id="resGuests" name="guests" min="1" max="100" value="2" required aria-required="true">
+              <span class="field-error" id="errGuests"></span>
+            </div>
+            <div class="field">
+              <label for="resNotes">Ghi chú (không bắt buộc)</label>
+              <input type="text" id="resNotes" name="notes" placeholder="Ví dụ: bàn gần cửa sổ, sinh nhật...">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Gửi Yêu Cầu Đặt Bàn</button>
+          <p class="form-note">Bằng việc gửi yêu cầu, bạn đồng ý để nhà hàng liên hệ xác nhận đặt bàn.</p>
+          <div class="form-success" id="formSuccess" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==========================================================================
+     FOOTER
+     ========================================================================== -->
+<footer class="footer" id="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo"><span class="dot"></span><span id="footLogoText">Nhà Hàng</span></div>
+        <p id="footAbout">Ẩm thực tinh tế trong không gian ấm cúng.</p>
+        <div class="footer-social" id="footSocial"></div>
+      </div>
+      <div class="footer-col">
+        <h5>Liên hệ</h5>
+        <ul>
+          <li id="footAddress">--</li>
+          <li><a id="footPhoneLink" href="#">--</a></li>
+          <li><a id="footEmailLink" href="#">--</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Giờ mở cửa</h5>
+        <ul><li id="footHours">--</li></ul>
+      </div>
+      <div class="footer-col">
+        <h5>Điều hướng</h5>
+        <ul>
+          <li><a href="#menu">Thực đơn</a></li>
+          <li><a href="#gallery">Không gian</a></li>
+          <li><a href="#reserve">Đặt bàn</a></li>
+          <li><a href="#faq">Câu hỏi thường gặp</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p id="footCopyright">© Nhà Hàng</p>
+      <p>Thiết kế theo phong cách Premium Dark Glassmorphism</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ==========================================================================
+     LIGHTBOX (gallery)
+     ========================================================================== -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh phóng to">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Đóng ảnh phóng to">
+    <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <div class="lightbox-inner">
+    <div class="thumb" id="lightboxThumb"></div>
+    <p class="lightbox-caption" id="lightboxCaption"></p>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   HELPER FUNCTIONS
+   ========================================================================== */
+
+// Escape chuỗi để chèn an toàn vào innerHTML
+function escapeHtml(str){
+  if(str === undefined || str === null) return "";
+  return String(str).replace(/[&<>"']/g, function(m){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[m];
+  });
+}
+
+// Chuyển hex -> {r,g,b}
+function hexToRgb(hex){
+  const clean = hex.replace("#","");
+  const full = clean.length === 3 ? clean.split("").map(c => c + c).join("") : clean;
+  const num = parseInt(full, 16);
+  return { r:(num >> 16) & 255, g:(num >> 8) & 255, b:num & 255 };
+}
+
+// Làm sáng / tối một màu hex theo phần trăm (-100 đến 100)
+function shadeColor(hex, percent){
+  const { r, g, b } = hexToRgb(hex);
+  const t = percent < 0 ? 0 : 255;
+  const p = Math.abs(percent) / 100;
+  const nr = Math.round((t - r) * p + r);
+  const ng = Math.round((t - g) * p + g);
+  const nb = Math.round((t - b) * p + b);
+  return "#" + [nr, ng, nb].map(v => v.toString(16).padStart(2,"0")).join("");
+}
+
+// Render một ô ảnh có fallback đẹp khi chưa có ảnh thật / ảnh lỗi
+function renderThumb(imageUrl, label){
+  const initial = (label || "?").trim().charAt(0).toUpperCase();
+  const imgTag = imageUrl
+    ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(label)}" loading="lazy" onerror="this.style.display='none';">`
+    : "";
+  return `<div class="thumb"><div class="thumb-fallback" aria-hidden="true">${initial}</div>${imgTag}</div>`;
+}
+
+// Bộ icon SVG dùng chung (đường nét tối giản, dùng currentColor qua stroke)
+const ICONS = {
+  leaf: '<path d="M11 20A7 7 0 0 1 4 13c0-6 5-10 15-11-1 10-5 15-11 15Z"/><path d="M4 20 12 12"/>',
+  flame: '<path d="M12 2c1.2 3 4 4.7 4 8.2A4 4 0 0 1 12 14a4 4 0 0 1-4-4C8 6.7 10.8 5 12 2Z"/><path d="M8.5 14a4 4 0 0 0 7 2.6c1.5-1.8 1.2-4 .5-5.6 1.8 1.3 3 3.4 3 5.8a7 7 0 0 1-14 0c0-1.7.6-3 1.5-4"/>',
+  sparkles: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/>',
+  heart: '<path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  gift: '<rect x="3" y="8" width="18" height="13" rx="1"/><path d="M12 8v13M3 12h18"/><path d="M12 8c-2 0-4-1-4-3a2.5 2.5 0 0 1 4-2c0-1.5 1-2.5 2-2.5S16 2.5 16 4c0 2-2 3-4 3"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+  star: '<path d="M12 2 15 9l7 1-5 5 1.5 7-6.5-3.5L5 22l1.5-7-5-5 7-1 3.5-7Z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>'
+};
+
+// Lấy đường link Messenger từ CONFIG.FACEBOOK (đổi sang dạng m.me nếu là URL page)
+function getMessengerLink(){
+  if(!CONFIG.FACEBOOK) return "#";
+  try{
+    const url = new URL(CONFIG.FACEBOOK);
+    const path = url.pathname.replace(/\//g, "");
+    return path ? `https://m.me/${path}` : CONFIG.FACEBOOK;
+  }catch(e){
+    return CONFIG.FACEBOOK;
+  }
+}
+
+// Link Google Maps để chỉ đường (dùng cho nút liên hệ nhanh và footer)
+function getMapSearchLink(){
+  if(CONFIG.GOOGLE_MAP && CONFIG.GOOGLE_MAP.trim() !== "" && CONFIG.GOOGLE_MAP.startsWith("http")){
+    return CONFIG.GOOGLE_MAP;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONFIG.DIA_CHI)}`;
+}
+
+// Src nhúng iframe Google Maps (link rút gọn goo.gl không dùng được trong iframe)
+function getMapEmbedSrc(){
+  return `https://maps.google.com/maps?q=${encodeURIComponent(CONFIG.DIA_CHI)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+}
+
+/* ==========================================================================
+   RENDER FUNCTIONS
+   ========================================================================== */
+
+// ---- Áp dụng bảng màu từ CONFIG lên toàn bộ trang qua CSS variables ----
+function renderTheme(){
+  const root = document.documentElement.style;
+  const { r, g, b } = hexToRgb(CONFIG.PRIMARY_COLOR);
+  root.setProperty("--primary", CONFIG.PRIMARY_COLOR);
+  root.setProperty("--primary-rgb", `${r},${g},${b}`);
+  root.setProperty("--primary-light", shadeColor(CONFIG.PRIMARY_COLOR, 28));
+  root.setProperty("--primary-dark", shadeColor(CONFIG.PRIMARY_COLOR, -22));
+  root.setProperty("--bg-base", CONFIG.SECONDARY_COLOR);
+  root.setProperty("--bg-surface", shadeColor(CONFIG.SECONDARY_COLOR, 6));
+  root.setProperty("--bg-surface-2", shadeColor(CONFIG.SECONDARY_COLOR, 11));
+}
+
+// ---- SEO: title, meta tags, Open Graph, Twitter Card, JSON-LD ----
+function renderSEO(){
+  const title = `${CONFIG.TEN_QUAN} — ${CONFIG.LOAI_HINH}`;
+  const desc = `${CONFIG.TEN_QUAN} — ${CONFIG.LOAI_HINH} tại ${CONFIG.DIA_CHI}. Đặt bàn ngay để trải nghiệm ẩm thực và không gian đẳng cấp. Hotline: ${CONFIG.SDT}.`;
+  const url = window.location.href;
+
+  document.getElementById("pageTitle").textContent = title;
+  document.getElementById("metaDescription").setAttribute("content", desc);
+  document.getElementById("canonicalLink").setAttribute("href", url);
+  document.getElementById("ogTitle").setAttribute("content", title);
+  document.getElementById("ogDescription").setAttribute("content", desc);
+  document.getElementById("ogUrl").setAttribute("content", url);
+  document.getElementById("twTitle").setAttribute("content", title);
+  document.getElementById("twDescription").setAttribute("content", desc);
+  const firstImage = GALLERY.find(g => g.image) ? GALLERY.find(g => g.image).image : "";
+  document.getElementById("ogImage").setAttribute("content", firstImage);
+  document.getElementById("twImage").setAttribute("content", firstImage);
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": CONFIG.TEN_QUAN,
+    "servesCuisine": CONFIG.LOAI_HINH,
+    "priceRange": `${CONFIG.PRICE_FROM} - ${CONFIG.PRICE_TO}`,
+    "telephone": CONFIG.SDT,
+    "email": CONFIG.EMAIL,
+    "address": { "@type": "PostalAddress", "streetAddress": CONFIG.DIA_CHI },
+    "url": url,
+    "openingHours": CONFIG.GIO_MO_CUA,
+    "sameAs": [CONFIG.FACEBOOK, CONFIG.INSTAGRAM, CONFIG.TIKTOK].filter(Boolean)
+  };
+  document.getElementById("ldJson").textContent = JSON.stringify(schema);
+}
+
+// ---- Navbar / Hero / About / Footer: điền dữ liệu tĩnh từ CONFIG ----
+function renderCoreText(){
+  document.getElementById("navLogoText").textContent = CONFIG.TEN_QUAN;
+  document.getElementById("footLogoText").textContent = CONFIG.TEN_QUAN;
+
+  document.getElementById("heroBadge").textContent = CONFIG.LOAI_HINH;
+  document.getElementById("heroTitle").textContent = CONFIG.TEN_QUAN;
+  document.getElementById("heroSlogan").textContent = CONFIG.SLOGAN;
+  document.getElementById("heroHours").textContent = CONFIG.GIO_MO_CUA;
+  document.getElementById("heroPrice").textContent = `${CONFIG.PRICE_FROM} – ${CONFIG.PRICE_TO}`;
+  document.getElementById("heroAddressShort").textContent = CONFIG.DIA_CHI.split(",")[0];
+
+  document.getElementById("aboutText").innerHTML =
+    `${CONFIG.TEN_QUAN} là ${CONFIG.LOAI_HINH.toLowerCase()} với triết lý chế biến từ nguyên liệu tươi mỗi ngày, ` +
+    `quy trình sơ chế đảm bảo vệ sinh an toàn thực phẩm, cùng không gian ấm cúng phù hợp cho gia đình, ` +
+    `bạn bè và cả những buổi họp mặt quan trọng. Đội ngũ của chúng tôi luôn sẵn sàng mang đến trải nghiệm ẩm thực trọn vẹn nhất.`;
+  document.getElementById("aboutMenuCount").textContent = `${MENU.length}+`;
+
+  document.getElementById("footAbout").textContent = `${CONFIG.LOAI_HINH} — ${CONFIG.SLOGAN}`;
+  document.getElementById("footAddress").textContent = CONFIG.DIA_CHI;
+  const phoneLink = document.getElementById("footPhoneLink");
+  phoneLink.textContent = CONFIG.SDT;
+  phoneLink.href = `tel:${CONFIG.SDT.replace(/\s/g, "")}`;
+  const emailLink = document.getElementById("footEmailLink");
+  emailLink.textContent = CONFIG.EMAIL;
+  emailLink.href = `mailto:${CONFIG.EMAIL}`;
+  document.getElementById("footHours").textContent = CONFIG.GIO_MO_CUA;
+  document.getElementById("footCopyright").textContent = `© ${new Date().getFullYear()} ${CONFIG.TEN_QUAN}. Bảo lưu mọi quyền.`;
+
+  const socialData = [
+    { url: CONFIG.FACEBOOK, label: "Facebook", icon: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/>' },
+    { url: CONFIG.INSTAGRAM, label: "Instagram", icon: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/>' },
+    { url: CONFIG.TIKTOK, label: "TikTok", icon: '<path d="M14 3v10.5a3.5 3.5 0 1 1-3-3.46"/><path d="M14 3c0 2.5 2 4.5 4.5 4.5"/>' }
+  ].filter(s => s.url);
+  document.getElementById("footSocial").innerHTML = socialData.map(s =>
+    `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener" aria-label="${s.label}"><svg viewBox="0 0 24 24">${s.icon}</svg></a>`
+  ).join("");
+}
+
+// ---- Quickbar (nút liên hệ nhanh nổi) ----
+function renderQuickbar(){
+  const items = [
+    { href: `tel:${CONFIG.SDT.replace(/\s/g, "")}`, label: "Gọi điện", cls: "call", icon: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.9.6 2.7a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2Z"/>' },
+    { href: CONFIG.ZALO, label: "Chat Zalo", cls: "", icon: '<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.4 8.4 0 0 1-3.9-.94L3 21l1.94-5.6A8.4 8.4 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5Z"/>' },
+    { href: getMessengerLink(), label: "Nhắn tin Messenger", cls: "", icon: '<path d="M12 3C6.9 3 3 6.6 3 11.3c0 2.7 1.4 5.1 3.6 6.6V21l3.3-1.8c.7.2 1.4.3 2.1.3 5.1 0 9-3.6 9-8.2S17.1 3 12 3Z"/>' },
+    { href: getMapSearchLink(), label: "Chỉ đường Google Maps", cls: "", icon: '<path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/>' }
+  ].filter(i => i.href && i.href !== "#");
+  document.getElementById("quickbar").innerHTML = items.map(i =>
+    `<a class="quick-btn ${i.cls}" href="${escapeHtml(i.href)}" target="${i.href.startsWith('tel:') ? '_self' : '_blank'}" rel="noopener" aria-label="${i.label}"><svg viewBox="0 0 24 24">${i.icon}</svg></a>`
+  ).join("");
+}
+
+// ---- Highlights ----
+function renderHighlights(){
+  document.getElementById("highlightsGrid").innerHTML = HIGHLIGHTS.map(h => `
+    <div class="highlight-card glass-card">
+      <div class="highlight-icon"><svg viewBox="0 0 24 24">${ICONS[h.icon] || ICONS.sparkles}</svg></div>
+      <h3>${escapeHtml(h.title)}</h3>
+      <p>${escapeHtml(h.description)}</p>
+    </div>
+  `).join("");
+}
+
+// ---- Featured menu (lấy từ đầu mảng MENU) ----
+function renderFeaturedMenu(){
+  const featured = MENU.slice(0, 6);
+  document.getElementById("featuredMenuGrid").innerHTML = featured.map(item => `
+    <div class="food-card">
+      <div style="position:relative;">
+        <span class="food-badge">${escapeHtml(item.category)}</span>
+        ${renderThumb(item.image, item.name)}
+      </div>
+      <div class="food-body">
+        <h4>${escapeHtml(item.name)}</h4>
+        <p>${escapeHtml(item.description)}</p>
+        <div class="food-foot"><span class="food-price">${escapeHtml(item.price)}</span></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ---- Category tabs + menu grid (lọc theo danh mục) ----
+let activeCategory = "Tất cả";
+function renderCategoryTabs(){
+  document.getElementById("categoryTabs").innerHTML = CATEGORIES.map(cat => `
+    <button class="tab-btn ${cat === activeCategory ? "active" : ""}" data-cat="${escapeHtml(cat)}" role="tab" aria-selected="${cat === activeCategory}">${escapeHtml(cat)}</button>
+  `).join("");
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeCategory = btn.dataset.cat;
+      renderCategoryTabs();
+      renderMenuGrid();
+    });
+  });
+}
+function renderMenuGrid(){
+  const filtered = activeCategory === "Tất cả" ? MENU : MENU.filter(m => m.category === activeCategory);
+  const grid = document.getElementById("menuGrid");
+  if(filtered.length === 0){
+    grid.innerHTML = `<p class="menu-empty">Chưa có món nào trong danh mục này.</p>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(item => `
+    <div class="food-card">
+      ${renderThumb(item.image, item.name)}
+      <div class="food-body">
+        <h4>${escapeHtml(item.name)}</h4>
+        <p>${escapeHtml(item.description)}</p>
+        <div class="food-foot"><span class="food-price">${escapeHtml(item.price)}</span></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ---- Gallery + lightbox ----
+function renderGallery(){
+  document.getElementById("galleryGrid").innerHTML = GALLERY.map((g, i) => `
+    <div class="gallery-item" data-index="${i}" tabindex="0" role="button" aria-label="Xem ảnh: ${escapeHtml(g.caption)}">
+      ${renderThumb(g.image, g.caption)}
+      <span class="gallery-caption">${escapeHtml(g.caption)}</span>
+    </div>
+  `).join("");
+
+  const lightbox = document.getElementById("lightbox");
+  const lightboxThumb = document.getElementById("lightboxThumb");
+  const lightboxCaption = document.getElementById("lightboxCaption");
+
+  function openLightbox(index){
+    const item = GALLERY[index];
+    lightboxThumb.innerHTML = renderThumb(item.image, item.caption);
+    lightboxCaption.textContent = item.caption;
+    lightbox.classList.add("open");
+  }
+  function closeLightbox(){ lightbox.classList.remove("open"); }
+
+  document.querySelectorAll(".gallery-item").forEach(el => {
+    el.addEventListener("click", () => openLightbox(parseInt(el.dataset.index, 10)));
+    el.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openLightbox(parseInt(el.dataset.index, 10)); } });
+  });
+  document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+  lightbox.addEventListener("click", e => { if(e.target === lightbox) closeLightbox(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeLightbox(); });
+}
+
+// ---- Promotions ----
+function renderPromotions(){
+  document.getElementById("promoGrid").innerHTML = PROMOTIONS.map(p => `
+    <div class="promo-card glass-card">
+      <span class="promo-tag">${escapeHtml(p.tag)}</span>
+      <svg viewBox="0 0 24 24">${ICONS[p.icon] || ICONS.star}</svg>
+      <h3>${escapeHtml(p.title)}</h3>
+      <p>${escapeHtml(p.description)}</p>
+    </div>
+  `).join("");
+}
+
+// ---- Reviews ----
+function renderReviews(){
+  document.getElementById("reviewsGrid").innerHTML = REVIEWS.map(r => {
+    const fullStars = Math.min(5, Math.max(0, Math.round(r.rating)));
+    const stars = "★".repeat(fullStars) + "☆".repeat(5 - fullStars);
+    const initial = r.name.trim().charAt(0).toUpperCase();
+    return `
+    <div class="review-card glass-card">
+      <div class="review-stars" aria-label="${r.rating} trên 5 sao">${stars}</div>
+      <p class="review-comment">"${escapeHtml(r.comment)}"</p>
+      <div class="review-who">
+        <div class="review-avatar" aria-hidden="true">${initial}</div>
+        <div><strong>${escapeHtml(r.name)}</strong><span>${escapeHtml(r.role)}</span></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ---- Process (quy trình phục vụ — có thứ tự thật nên đánh số) ----
+function renderProcess(){
+  document.getElementById("processSteps").innerHTML = PROCESS.map((step, i) => `
+    <div class="process-step glass-card">
+      <div class="process-num">${String(i + 1).padStart(2, "0")}</div>
+      <h3>${escapeHtml(step.title)}</h3>
+      <p>${escapeHtml(step.description)}</p>
+    </div>
+  `).join("");
+}
+
+// ---- FAQ (dùng <details>/<summary> để có accordion không cần JS toggle) ----
+function renderFAQ(){
+  document.getElementById("faqList").innerHTML = FAQ.map((f, i) => `
+    <details class="faq-item glass-card" ${i === 0 ? "open" : ""}>
+      <summary>${escapeHtml(f.question)}<svg class="faq-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary>
+      <div class="faq-answer">${escapeHtml(f.answer)}</div>
+    </details>
+  `).join("");
+}
+
+// ---- Google Map ----
+function renderMap(){
+  document.getElementById("mapWrap").innerHTML =
+    `<iframe src="${getMapEmbedSrc()}" title="Bản đồ vị trí ${escapeHtml(CONFIG.TEN_QUAN)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>`;
+}
+
+/* ==========================================================================
+   EVENTS
+   ========================================================================== */
+
+// ---- Mobile nav toggle ----
+function bindNavEvents(){
+  const burger = document.getElementById("navBurger");
+  const mobileNav = document.getElementById("mobileNav");
+  burger.addEventListener("click", () => {
+    const open = mobileNav.classList.toggle("open");
+    burger.setAttribute("aria-expanded", String(open));
+  });
+  mobileNav.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+    mobileNav.classList.remove("open");
+    burger.setAttribute("aria-expanded", "false");
+  }));
+
+  // Navbar background khi cuộn trang
+  const navbar = document.getElementById("navbar");
+  window.addEventListener("scroll", () => {
+    navbar.classList.toggle("scrolled", window.scrollY > 30);
+  }, { passive: true });
+}
+
+// ---- Validate + submit form đặt bàn (không reload trang) ----
+function bindReservationForm(){
+  const form = document.getElementById("reserveForm");
+  const dateInput = document.getElementById("resDate");
+  const today = new Date();
+  dateInput.min = today.toISOString().split("T")[0];
+
+  function setError(fieldId, errId, message){
+    document.getElementById(fieldId).classList.toggle("has-error", Boolean(message));
+    document.getElementById(errId).textContent = message || "";
+  }
+
+  function validate(data){
+    let valid = true;
+
+    if(!data.name || data.name.trim().length < 2){
+      setError("fieldName", "errName", "Vui lòng nhập họ tên hợp lệ."); valid = false;
+    } else setError("fieldName", "errName", "");
+
+    if(!/^0\d{9,10}$/.test(data.phone.trim().replace(/\s/g, ""))){
+      setError("fieldPhone", "errPhone", "Số điện thoại không hợp lệ (VD: 0909123456)."); valid = false;
+    } else setError("fieldPhone", "errPhone", "");
+
+    if(!data.date){
+      setError("fieldDate", "errDate", "Vui lòng chọn ngày."); valid = false;
+    } else {
+      const chosen = new Date(data.date + "T00:00:00");
+      const now = new Date(); now.setHours(0,0,0,0);
+      if(chosen < now){ setError("fieldDate", "errDate", "Ngày không được ở quá khứ."); valid = false; }
+      else setError("fieldDate", "errDate", "");
+    }
+
+    if(!data.time){
+      setError("fieldTime", "errTime", "Vui lòng chọn giờ."); valid = false;
+    } else setError("fieldTime", "errTime", "");
+
+    const guestsNum = parseInt(data.guests, 10);
+    if(!guestsNum || guestsNum < 1 || guestsNum > 100){
+      setError("fieldGuests", "errGuests", "Số khách phải từ 1 đến 100."); valid = false;
+    } else setError("fieldGuests", "errGuests", "");
+
+    return valid;
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    const data = {
+      name: form.name.value,
+      phone: form.phone.value,
+      date: form.date.value,
+      time: form.time.value,
+      guests: form.guests.value,
+      notes: form.notes.value
+    };
+    if(!validate(data)) return;
+
+    const success = document.getElementById("formSuccess");
+    success.textContent = `Cảm ơn ${data.name}! Yêu cầu đặt bàn cho ${data.guests} khách lúc ${data.time} ngày ${data.date} đã được ghi nhận. Chúng tôi sẽ gọi xác nhận qua số ${data.phone} trong ít phút.`;
+    success.classList.add("show");
+    form.reset();
+    document.getElementById("resGuests").value = 2;
+    dateInput.min = today.toISOString().split("T")[0];
+    setTimeout(() => success.classList.remove("show"), 8000);
+  });
+}
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
+
+// ---- Scroll reveal cho mọi phần tử có [data-animate] ----
+function bindScrollAnimations(){
+  const items = document.querySelectorAll("[data-animate]");
+  if(!("IntersectionObserver" in window)){
+    items.forEach(el => el.classList.add("is-visible"));
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -60px 0px" });
+  items.forEach(el => observer.observe(el));
+}
+
+/* ==========================================================================
+   INIT — chạy toàn bộ theo đúng thứ tự sau khi DOM sẵn sàng
+   ========================================================================== */
+document.addEventListener("DOMContentLoaded", function(){
+  renderTheme();
+  renderSEO();
+  renderCoreText();
+  renderQuickbar();
+  renderHighlights();
+  renderFeaturedMenu();
+  renderCategoryTabs();
+  renderMenuGrid();
+  renderGallery();
+  renderPromotions();
+  renderReviews();
+  renderProcess();
+  renderFAQ();
+  renderMap();
+  bindNavEvents();
+  bindReservationForm();
+  bindScrollAnimations();
+});
+</script>
+</body>
+</html>
